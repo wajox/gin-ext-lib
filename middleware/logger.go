@@ -6,12 +6,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 type LoggerConfig struct {
-	Output    io.Writer
 	SkipPaths []string
 }
 
@@ -21,22 +19,16 @@ func Logger() gin.HandlerFunc {
 
 func LoggerWithWriter(out io.Writer, notlogged ...string) gin.HandlerFunc {
 	return LoggerWithConfig(LoggerConfig{
-		Output:    out,
 		SkipPaths: notlogged,
 	})
 }
 
 func LoggerWithConfig(conf LoggerConfig) gin.HandlerFunc {
-	if conf.Output == nil {
-		conf.Output = gin.DefaultWriter
-	}
-
 	return newLoggerMiddleware(conf)
 }
 
 func newLoggerMiddleware(conf LoggerConfig) gin.HandlerFunc {
 	skip := computeSkip(conf)
-	log.Logger = zerolog.New(conf.Output)
 
 	return func(c *gin.Context) {
 		// Start timer

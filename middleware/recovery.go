@@ -3,7 +3,6 @@ package middleware
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -13,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
@@ -25,15 +23,9 @@ var (
 )
 
 func Recovery() gin.HandlerFunc {
-	return RecoveryWithWriter(gin.DefaultErrorWriter)
-}
-
-func RecoveryWithWriter(out io.Writer) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
-				log.Logger = zerolog.New(out)
-
 				brokenPipe := isBrokenPipeError(err)
 
 				if brokenPipe {
