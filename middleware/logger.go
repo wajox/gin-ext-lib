@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
@@ -14,20 +15,20 @@ type LoggerConfig struct {
 }
 
 func Logger() gin.HandlerFunc {
-	return LoggerWithConfig(LoggerConfig{})
+	return LoggerWithConfig(LoggerConfig{}, log.Logger)
 }
 
 func LoggerWithWriter(out io.Writer, notlogged ...string) gin.HandlerFunc {
 	return LoggerWithConfig(LoggerConfig{
 		SkipPaths: notlogged,
-	})
+	}, log.Logger)
 }
 
-func LoggerWithConfig(conf LoggerConfig) gin.HandlerFunc {
-	return newLoggerMiddleware(conf)
+func LoggerWithConfig(conf LoggerConfig, logger zerolog.Logger) gin.HandlerFunc {
+	return newLoggerMiddleware(conf, logger)
 }
 
-func newLoggerMiddleware(conf LoggerConfig) gin.HandlerFunc {
+func newLoggerMiddleware(conf LoggerConfig, logger zerolog.Logger) gin.HandlerFunc {
 	skip := computeSkip(conf)
 
 	return func(c *gin.Context) {
@@ -44,7 +45,7 @@ func newLoggerMiddleware(conf LoggerConfig) gin.HandlerFunc {
 			return
 		}
 
-		log.Info().
+		logger.Info().
 			Str("StartTimestamp", fmt.Sprintf("%d", start.Unix())).
 			Str("ClientIP", c.ClientIP()).
 			Str("Method", c.Request.Method).
